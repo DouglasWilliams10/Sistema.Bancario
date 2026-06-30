@@ -11,14 +11,28 @@ namespace Projeto.Integrador.DAO
         {
             using (SqlConnection conexao = ConexaoDAO.ObterConexao())
             {
-                string sql = "INSERT INTO Extrato (NumeroConta, Tipo, Valor, DataOperacao) " +
-                             "VALUES (@NumeroConta, @Tipo, @Valor, @DataOperacao)";
+                string sql = @"INSERT INTO Extrato
+                      (NumeroConta,
+                       Tipo,
+                       Valor,
+                       Saldo,
+                       DataOperacao)
+
+                       VALUES
+
+                      (@NumeroConta,
+                       @Tipo,
+                       @Valor,
+                       @Saldo,
+                       @DataOperacao)";
 
                 SqlCommand comando = new SqlCommand(sql, conexao);
+
                 comando.Parameters.AddWithValue("@NumeroConta", extrato.NumeroConta);
                 comando.Parameters.AddWithValue("@Tipo", extrato.Tipo);
                 comando.Parameters.AddWithValue("@Valor", extrato.Valor);
-                comando.Parameters.AddWithValue("@DataOperacao", extrato.DataOperacao);
+                comando.Parameters.AddWithValue("@Saldo", extrato.Saldo);
+                comando.Parameters.AddWithValue("@DataOperacao", DateTime.Now);
 
                 comando.ExecuteNonQuery();
             }
@@ -45,8 +59,10 @@ namespace Projeto.Integrador.DAO
                         Convert.ToInt32(leitor["NumeroConta"]),
                         leitor["Tipo"].ToString(),
                         Convert.ToDouble(leitor["Valor"]),
+                        Convert.ToDouble(leitor["Saldo"]),
                         Convert.ToDateTime(leitor["DataOperacao"])
                     );
+
                     extratos.Add(extrato);
                 }
             }

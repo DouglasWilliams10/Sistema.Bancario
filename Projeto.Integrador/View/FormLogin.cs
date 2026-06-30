@@ -62,7 +62,7 @@ namespace Projeto.Integrador.View
 
         private void btnVoltar_login_Click(object sender, EventArgs e)
         {
-            MainMenu menu = new MainMenu();
+            FormLogin menu = new FormLogin();
             menu.Show();
             this.Hide();
         }

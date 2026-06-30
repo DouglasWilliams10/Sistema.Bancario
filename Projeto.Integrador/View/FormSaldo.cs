@@ -58,7 +58,7 @@ namespace Projeto.Integrador.View
             _conta.Depositar(valor);
             contaDAO.AtualizarSaldo(_conta);
 
-            Extrato extrato = new Extrato(0, _conta.NumeroConta, "Deposito", valor, DateTime.Now);
+            Extrato extrato = new Extrato(0, _conta.NumeroConta, "Deposito", valor, _conta.Saldo, DateTime.Now);
             extratoDAO.RegistrarOperacao(extrato);
 
             lblSaldo.Text = "Saldo: R$ " + _conta.Saldo.ToString("F2");
@@ -98,7 +98,7 @@ namespace Projeto.Integrador.View
             _conta.Sacar(valor);
             contaDAO.AtualizarSaldo(_conta);
 
-            Extrato extrato = new Extrato(0, _conta.NumeroConta, "Saque", valor, DateTime.Now);
+            Extrato extrato = new Extrato(0, _conta.NumeroConta, "Saque", valor, _conta.Saldo, DateTime.Now);
             extratoDAO.RegistrarOperacao(extrato);
 
             lblSaldo.Text = "Saldo: R$ " + _conta.Saldo.ToString("F2");
