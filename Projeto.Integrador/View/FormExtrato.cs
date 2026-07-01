@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Projeto.Integrador.DAO;
+using Projeto.Integrador.Model;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,14 +14,44 @@ namespace Projeto.Integrador.View
 {
     public partial class FormExtrato : Form
     {
-        public FormExtrato()
+        private int _numeroConta;
+        private ExtratoController extratoController = new ExtratoController();
+
+        public FormExtrato(int numeroConta)
         {
             InitializeComponent();
+            _numeroConta = numeroConta;
         }
-
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void FormExtrato_Load(object sender, EventArgs e)
         {
+            dgvExtrato.Columns.Clear();
+            dgvExtrato.Columns.Add("Tipo", "Tipo");
+            dgvExtrato.Columns.Add("Valor", "Valor (R$)");
+            dgvExtrato.Columns.Add("Saldo", "Saldo (R$)");
+            dgvExtrato.Columns.Add("Data", "Data/Hora");
+
+            List<Extrato> extratos = extratoController.BuscarExtrato(_numeroConta);
+
+            foreach (Extrato extrato in extratos)
+            {
+                dgvExtrato.Rows.Add(
+                    extrato.Tipo,
+                    extrato.Valor.ToString("F2"),
+                    extrato.Saldo.ToString("F2"),
+                    extrato.DataOperacao.ToString("dd/MM/yyyy HH:mm")
+                );
+            }
+            dgvExtrato.ReadOnly = true;
+            dgvExtrato.AllowUserToAddRows = false;
+
 
         }
+        private void btnVoltar_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+      
     }
+
 }

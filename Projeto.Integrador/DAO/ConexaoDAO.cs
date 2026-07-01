@@ -11,7 +11,7 @@ namespace Projeto.Integrador.DAO
             string caminho = Path.Combine(
                 Application.StartupPath,
                 "DAO",
-                "Database.mdf");
+                "BD_Caixa.mdf"); 
 
             string conexao =
                 $@"Data Source=(LocalDB)\MSSQLLocalDB;
@@ -27,4 +27,3 @@ namespace Projeto.Integrador.DAO
         }
     }
 }
-

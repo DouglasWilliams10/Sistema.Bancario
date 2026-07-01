@@ -65,5 +65,39 @@ namespace Projeto.Integrador.Controller
                 comando.ExecuteNonQuery();
             }
         }
+
+        public Conta BuscarContaPorCPF(string cpf)
+        {
+            using (SqlConnection conexao = ConexaoDAO.ObterConexao())
+            {
+                string cpfLimpo = cpf.Replace(".", "").Replace("-", "");
+
+                string sql = "SELECT c.NumeroConta, c.Saldo, c.UsuarioId " +
+                             "FROM Conta c " +
+                             "INNER JOIN Usuario u ON c.UsuarioId = u.Id " +
+                             "WHERE u.CPF = @CPF";
+
+                SqlCommand comando = new SqlCommand(sql, conexao);
+                comando.Parameters.AddWithValue("@CPF", cpfLimpo);
+
+                SqlDataReader leitor = comando.ExecuteReader();
+
+                if (leitor.Read())
+                {
+                    Usuario titular = new Usuario(
+                        Convert.ToInt32(leitor["UsuarioId"]),
+                        "", "", "", "", DateTime.MinValue
+                    );
+
+                    return new Conta(
+                        Convert.ToInt32(leitor["NumeroConta"]),
+                        Convert.ToDouble(leitor["Saldo"]),
+                        titular
+                    );
+                }
+
+                return null;
+            }
+        }
     }
-}
+    }

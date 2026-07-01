@@ -107,7 +107,89 @@ namespace Projeto.Integrador.View
 
         private void btnExtrato_Click(object sender, EventArgs e)
         {
-            // implementar depois
+            FormExtrato formExtrato = new FormExtrato(_conta.NumeroConta);
+            formExtrato.ShowDialog();
+        }
+        private void btnTransferir_Click(object sender, EventArgs e)
+        {
+            string cpfDestino = Interaction.InputBox(
+                "Digite o CPF da conta destino:",
+                "Transferência",
+                ""
+            );
+
+            if (string.IsNullOrWhiteSpace(cpfDestino))
+                return;
+
+            // Verifica se não está transferindo pra si mesmo
+            string cpfDestinoLimpo = cpfDestino.Replace(".", "").Replace("-", "");
+            string cpfOrigemLimpo = _conta.Titular.CPF.Replace(".", "").Replace("-", "");
+
+            if (cpfDestinoLimpo == cpfOrigemLimpo)
+            {
+                MessageBox.Show("Você não pode transferir para sua própria conta.");
+                return;
+            }
+
+            // Busca a conta destino
+            Conta contaDestino = contaDAO.BuscarContaPorCPF(cpfDestino);
+
+            if (contaDestino == null)
+            {
+                MessageBox.Show("Conta destino não encontrada.");
+                return;
+            }
+
+            // Pede o valor
+            string valorDigitado = Interaction.InputBox(
+                "Digite o valor a transferir:",
+                "Transferência",
+                "0"
+            );
+
+            if (string.IsNullOrWhiteSpace(valorDigitado))
+                return;
+
+            double valor;
+            if (!double.TryParse(valorDigitado, out valor))
+            {
+                MessageBox.Show("Valor inválido. Digite um número.");
+                return;
+            }
+
+            if (valor <= 0)
+            {
+                MessageBox.Show("O valor da transferência deve ser maior que zero.");
+                return;
+            }
+
+            if (valor > _conta.Saldo)
+            {
+                MessageBox.Show("Saldo insuficiente.");
+                return;
+            }
+
+            // Realiza a transferência
+            _conta.Sacar(valor);
+            contaDAO.AtualizarSaldo(_conta);
+
+            contaDestino.Depositar(valor);
+            contaDAO.AtualizarSaldo(contaDestino);
+
+            // Registra no extrato de quem enviou
+            Extrato extratoOrigem = new Extrato(
+                0, _conta.NumeroConta, "Transferencia Enviada", valor, _conta.Saldo, DateTime.Now
+            );
+            extratoDAO.RegistrarOperacao(extratoOrigem);
+
+            // Registra no extrato de quem recebeu
+            Extrato extratoDestino = new Extrato(
+                0, contaDestino.NumeroConta, "Transferencia Recebida", valor, contaDestino.Saldo, DateTime.Now
+            );
+            extratoDAO.RegistrarOperacao(extratoDestino);
+
+            lblSaldo.Text = "Saldo: R$ " + _conta.Saldo.ToString("F2");
+            MessageBox.Show("Transferência de R$ " + valor.ToString("F2") + " realizada com sucesso!");
         }
     }
 }

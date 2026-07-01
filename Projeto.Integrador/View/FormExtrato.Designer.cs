@@ -28,44 +28,49 @@
         /// </summary>
         private void InitializeComponent()
         {
-            dataGridView1 = new DataGridView();
-            textBox1 = new TextBox();
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
+            dgvExtrato = new DataGridView();
+            BtnVoltar = new Button();
+            ((System.ComponentModel.ISupportInitialize)dgvExtrato).BeginInit();
             SuspendLayout();
             // 
-            // dataGridView1
+            // dgvExtrato
             // 
-            dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView1.Location = new Point(34, 112);
-            dataGridView1.Name = "dataGridView1";
-            dataGridView1.Size = new Size(342, 205);
-            dataGridView1.TabIndex = 0;
-            dataGridView1.CellContentClick += dataGridView1_CellContentClick;
+            dgvExtrato.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dgvExtrato.Location = new Point(34, 47);
+            dgvExtrato.Margin = new Padding(3, 4, 3, 4);
+            dgvExtrato.Name = "dgvExtrato";
+            dgvExtrato.RowHeadersWidth = 51;
+            dgvExtrato.Size = new Size(767, 294);
+            dgvExtrato.TabIndex = 0;
             // 
-            // textBox1
+            // BtnVoltar
             // 
-            textBox1.Location = new Point(34, 34);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(271, 23);
-            textBox1.TabIndex = 1;
+            BtnVoltar.Location = new Point(334, 365);
+            BtnVoltar.Name = "BtnVoltar";
+            BtnVoltar.Size = new Size(149, 55);
+            BtnVoltar.TabIndex = 2;
+            BtnVoltar.Text = "Voltar";
+            BtnVoltar.UseVisualStyleBackColor = true;
+            BtnVoltar.Click += btnVoltar_Click;
             // 
             // FormExtrato
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(422, 329);
-            Controls.Add(textBox1);
-            Controls.Add(dataGridView1);
+            ClientSize = new Size(868, 445);
+            Controls.Add(BtnVoltar);
+            Controls.Add(dgvExtrato);
+            Margin = new Padding(3, 4, 3, 4);
             Name = "FormExtrato";
             Text = "FormExtrato";
-            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
+            Load += FormExtrato_Load;
+            ((System.ComponentModel.ISupportInitialize)dgvExtrato).EndInit();
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
 
-        private DataGridView dataGridView1;
-        private TextBox textBox1;
+        private DataGridView dgvExtrato;
+        private Button BtnVoltar;
     }
 }
