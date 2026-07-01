@@ -39,11 +39,15 @@ namespace Projeto.Integrador.Controller
 
                 if (leitor.Read())
                 {
-                    return new Conta
-                    (
+                    DateTime? dataPrimeiroDeposito = null;
+                    if (leitor["DataPrimeiroDeposito"] != DBNull.Value)
+                        dataPrimeiroDeposito = Convert.ToDateTime(leitor["DataPrimeiroDeposito"]);
+
+                    return new Conta(
                         Convert.ToInt32(leitor["NumeroConta"]),
                         Convert.ToDouble(leitor["Saldo"]),
-                        usuario
+                        usuario,
+                        dataPrimeiroDeposito
                     );
                 }
 
@@ -55,12 +59,18 @@ namespace Projeto.Integrador.Controller
         {
             using (SqlConnection conexao = ConexaoDAO.ObterConexao())
             {
-                string sql = "UPDATE Conta SET Saldo = @Saldo " +
+                string sql = "UPDATE Conta SET Saldo = @Saldo, " +
+                             "DataPrimeiroDeposito = @DataPrimeiroDeposito " +
                              "WHERE NumeroConta = @NumeroConta";
 
                 SqlCommand comando = new SqlCommand(sql, conexao);
                 comando.Parameters.AddWithValue("@Saldo", conta.Saldo);
                 comando.Parameters.AddWithValue("@NumeroConta", conta.NumeroConta);
+
+                if (conta.DataPrimeiroDeposito == null)
+                    comando.Parameters.AddWithValue("@DataPrimeiroDeposito", DBNull.Value);
+                else
+                    comando.Parameters.AddWithValue("@DataPrimeiroDeposito", conta.DataPrimeiroDeposito);
 
                 comando.ExecuteNonQuery();
             }
@@ -96,8 +106,28 @@ namespace Projeto.Integrador.Controller
                     );
                 }
 
+                return null; 
+            }
+        }
+
+        public string BuscarNomePorConta(int numeroConta)
+        {
+            using (SqlConnection conexao = ConexaoDAO.ObterConexao())
+            {
+                string sql = "SELECT u.Nome, u.Sobrenome FROM Usuario u " +
+                             "INNER JOIN Conta c ON u.Id = c.UsuarioId " +
+                             "WHERE c.NumeroConta = @NumeroConta";
+
+                SqlCommand comando = new SqlCommand(sql, conexao);
+                comando.Parameters.AddWithValue("@NumeroConta", numeroConta);
+
+                SqlDataReader leitor = comando.ExecuteReader();
+
+                if (leitor.Read())
+                    return leitor["Nome"].ToString() + " " + leitor["Sobrenome"].ToString();
+
                 return null;
             }
         }
     }
-    }
+}

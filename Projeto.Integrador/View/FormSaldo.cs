@@ -29,6 +29,7 @@ namespace Projeto.Integrador.View
         private void FormSaldo_Load(object sender, EventArgs e)
         {
             lblSaldo.Text = "Saldo: R$ " + _conta.Saldo.ToString("F2");
+            lblBemVindo.Text = "Bem-vindo, " + _conta.Titular.Nome + " " + _conta.Titular.Sobrenome + "!";
         }
 
         private void btnDepositar_Click(object sender, EventArgs e)
@@ -110,6 +111,7 @@ namespace Projeto.Integrador.View
             FormExtrato formExtrato = new FormExtrato(_conta.NumeroConta);
             formExtrato.ShowDialog();
         }
+
         private void btnTransferir_Click(object sender, EventArgs e)
         {
             string cpfDestino = Interaction.InputBox(
@@ -121,7 +123,6 @@ namespace Projeto.Integrador.View
             if (string.IsNullOrWhiteSpace(cpfDestino))
                 return;
 
-            // Verifica se não está transferindo pra si mesmo
             string cpfDestinoLimpo = cpfDestino.Replace(".", "").Replace("-", "");
             string cpfOrigemLimpo = _conta.Titular.CPF.Replace(".", "").Replace("-", "");
 
@@ -131,7 +132,6 @@ namespace Projeto.Integrador.View
                 return;
             }
 
-            // Busca a conta destino
             Conta contaDestino = contaDAO.BuscarContaPorCPF(cpfDestino);
 
             if (contaDestino == null)
@@ -140,9 +140,21 @@ namespace Projeto.Integrador.View
                 return;
             }
 
-            // Pede o valor
+            // Busca o nome do destinatário
+            string nomeDestino = contaDAO.BuscarNomePorConta(contaDestino.NumeroConta);
+
+            // Confirma com o usuário antes de transferir
+            DialogResult confirmacao = MessageBox.Show(
+                "Transferir para: " + nomeDestino + "\nConfirma?",
+                "Confirmar Transferência",
+                MessageBoxButtons.YesNo
+            );
+
+            if (confirmacao == DialogResult.No)
+                return;
+
             string valorDigitado = Interaction.InputBox(
-                "Digite o valor a transferir:",
+                "Digite o valor a transferir para " + nomeDestino + ":",
                 "Transferência",
                 "0"
             );
@@ -169,27 +181,48 @@ namespace Projeto.Integrador.View
                 return;
             }
 
-            // Realiza a transferência
             _conta.Sacar(valor);
             contaDAO.AtualizarSaldo(_conta);
 
             contaDestino.Depositar(valor);
             contaDAO.AtualizarSaldo(contaDestino);
 
-            // Registra no extrato de quem enviou
+            string nomeOrigem = _conta.Titular.Nome + " " + _conta.Titular.Sobrenome;
+
             Extrato extratoOrigem = new Extrato(
-                0, _conta.NumeroConta, "Transferencia Enviada", valor, _conta.Saldo, DateTime.Now
+                0, _conta.NumeroConta,
+                "Transf. para " + nomeDestino,
+                valor, _conta.Saldo, DateTime.Now
             );
             extratoDAO.RegistrarOperacao(extratoOrigem);
 
-            // Registra no extrato de quem recebeu
             Extrato extratoDestino = new Extrato(
-                0, contaDestino.NumeroConta, "Transferencia Recebida", valor, contaDestino.Saldo, DateTime.Now
+                0, contaDestino.NumeroConta,
+                "Transf. de " + nomeOrigem,
+                valor, contaDestino.Saldo, DateTime.Now
             );
             extratoDAO.RegistrarOperacao(extratoDestino);
 
             lblSaldo.Text = "Saldo: R$ " + _conta.Saldo.ToString("F2");
-            MessageBox.Show("Transferência de R$ " + valor.ToString("F2") + " realizada com sucesso!");
+            MessageBox.Show("Transferência de R$ " + valor.ToString("F2") +
+                          " realizada com sucesso para " + nomeDestino + "!");
+
         }
+
+        private void btnRendimentos_Click(object sender, EventArgs e)
+        {
+            FormRendimentos formRendimentos = new FormRendimentos(_conta);
+            formRendimentos.ShowDialog();
+        }
+
+        private void btnSair_Click(object sender, EventArgs e)
+        {
+            FormLogin formLogin = new FormLogin();
+            formLogin.Show();
+            this.Close();
+        }
+       
+     
+
     }
 }
