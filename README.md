@@ -195,7 +195,7 @@ O sistema impede:
 Clone o projeto
 
 ```bash
-git clone [https://github.com/SEU-USUARIO/CDR-Bank.git](https://github.com/DouglasWilliams10/Sistema.Bancario.git)
+git clone https://github.com/DouglasWilliams10/Sistema.Bancario.git
 ```
 
 Entre na pasta
