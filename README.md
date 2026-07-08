@@ -75,7 +75,7 @@ Durante seu desenvolvimento foram aplicados conceitos de:
 
 ## Tela Principal - Saldo
 
-<img width="701" height="375" alt="image" src="https://github.com/user-attachments/assets/29c95396-22f0-47ec-8c15-3f2ab2a88376" />
+<img width="790" height="414" alt="image" src="https://github.com/user-attachments/assets/2a3a29d5-6f83-4b81-9e77-c4f4aa6c39d6" />
 
 ---
 
