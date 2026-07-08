@@ -65,37 +65,31 @@ Durante seu desenvolvimento foram aplicados conceitos de:
 
 ## Login
 
-<img src="assets/<img width="667" height="436" alt="image" src="https://github.com/user-attachments/assets/3f7af6b4-b27f-4980-85e9-bd43af54c116" />
-">
+<img width="667" height="436" alt="image" src="https://github.com/user-attachments/assets/3f7af6b4-b27f-4980-85e9-bd43af54c116" />
 
 ---
 
 ## Cadastro
 
-<img src="<img width="688" height="628" alt="image" src="https://github.com/user-attachments/assets/35819057-f739-4652-9962-5f92715d23c3" />
-
-">
+<img width="688" height="628" alt="image" src="https://github.com/user-attachments/assets/35819057-f739-4652-9962-5f92715d23c3" />
 
 ---
 
 ## Tela Principal - Saldo
 
-<img src="<img width="701" height="375" alt="image" src="https://github.com/user-attachments/assets/29c95396-22f0-47ec-8c15-3f2ab2a88376" />
-">
+<img width="701" height="375" alt="image" src="https://github.com/user-attachments/assets/29c95396-22f0-47ec-8c15-3f2ab2a88376" />
 
 ---
 
 ## Depósito, Saque e Transferência
 
-<img src="<img width="717" height="397" alt="image" src="https://github.com/user-attachments/assets/02fe5cea-d10f-4e86-9d21-23022b8f0a7a" />
-">
+<img width="717" height="397" alt="image" src="https://github.com/user-attachments/assets/02fe5cea-d10f-4e86-9d21-23022b8f0a7a" />
 
 ---
 
 ## Extrato e Rendimentos
 
-<img src="<img width="704" height="401" alt="image" src="https://github.com/user-attachments/assets/7fac29c7-a4c3-4f8c-9200-feb77d728703" />
-">
+<img width="704" height="401" alt="image" src="https://github.com/user-attachments/assets/7fac29c7-a4c3-4f8c-9200-feb77d728703" />
 
 ---
 
