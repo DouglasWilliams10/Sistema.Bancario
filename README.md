@@ -3,8 +3,6 @@
 
 <p align="center">
 
-<img src="assets/logo.png" width="180">
-
 # Sistema Bancário
 
 **Projeto Integrador — Jovem Programador SENAC Brusque**
