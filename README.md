@@ -1,4 +1,5 @@
-<img width="685" height="629" alt="image" src="https://github.com/user-attachments/assets/3a417f35-9136-4c01-9c8f-7756a204db74" /># 🏦 CDR Bank
+<img width="190" height="207" alt="image" src="https://github.com/user-attachments/assets/22512fc1-50b4-4cdf-8124-e8288925e735" />
+🏦 CDR Bank
 
 <p align="center">
 
