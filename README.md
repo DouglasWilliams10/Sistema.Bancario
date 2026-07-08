@@ -294,6 +294,3 @@ Ela ajuda muito no crescimento do projeto.
 
 ---
 
-# 📄 Licença
-
-Este projeto possui finalidade exclusivamente acadêmica e educacional.
