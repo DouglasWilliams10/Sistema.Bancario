@@ -57,9 +57,9 @@ namespace Projeto.Integrador.DAO
                     Extrato extrato = new Extrato(
                         Convert.ToInt32(leitor["Id"]),
                         Convert.ToInt32(leitor["NumeroConta"]),
-                        leitor["Tipo"].ToString(),
-                        Convert.ToDouble(leitor["Valor"]),
-                        Convert.ToDouble(leitor["Saldo"]),
+                        leitor["Tipo"].ToString() ?? string.Empty,
+                        Convert.ToDecimal(leitor["Valor"]),
+                        Convert.ToDecimal(leitor["Saldo"]),
                         Convert.ToDateTime(leitor["DataOperacao"])
                     );
 

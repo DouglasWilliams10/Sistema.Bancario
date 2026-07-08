@@ -7,7 +7,7 @@ namespace Projeto.Integrador.View
     public partial class FormRendimentos : Form
     {
         private Conta _conta;
-        private const double TAXA_MENSAL = 0.05; // 5% ao mês
+        private const decimal TAXA_MENSAL = 0.05m; // 5% ao mês
 
         public FormRendimentos(Conta conta)
         {
@@ -33,17 +33,17 @@ namespace Projeto.Integrador.View
             dgvRendimentos.AllowUserToAddRows = false;
 
             // Taxa diária equivalente a 5% ao mês
-            double taxaDiaria = Math.Pow(1 + TAXA_MENSAL, 1.0 / 30) - 1;
+            decimal taxaDiaria = (decimal)Math.Pow((double)(1 + TAXA_MENSAL), 1.0 / 30) - 1;
 
             DateTime dataInicio = _conta.DataPrimeiroDeposito.Value.Date;
             DateTime dataHoje = DateTime.Now.Date;
 
-            double saldoSimulado = _conta.Saldo;
-            double totalRendido = 0;
+            decimal saldoSimulado = _conta.Saldo;
+            decimal totalRendido = 0;
 
             for (DateTime dia = dataInicio; dia <= dataHoje; dia = dia.AddDays(1))
             {
-                double rendimentoDia = saldoSimulado * taxaDiaria;
+                decimal rendimentoDia = saldoSimulado * taxaDiaria;
                 saldoSimulado += rendimentoDia;
                 totalRendido += rendimentoDia;
 

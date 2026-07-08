@@ -1,11 +1,7 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Projeto.Integrador.DAO;
 using Projeto.Integrador.Model;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Projeto.Integrador.Controller
 {
@@ -26,7 +22,7 @@ namespace Projeto.Integrador.Controller
             }
         }
 
-        public Conta BuscarContaPorUsuario(Usuario usuario)
+        public Conta? BuscarContaPorUsuario(Usuario usuario)
         {
             using (SqlConnection conexao = ConexaoDAO.ObterConexao())
             {
@@ -45,7 +41,7 @@ namespace Projeto.Integrador.Controller
 
                     return new Conta(
                         Convert.ToInt32(leitor["NumeroConta"]),
-                        Convert.ToDouble(leitor["Saldo"]),
+                        Convert.ToDecimal(leitor["Saldo"]),
                         usuario,
                         dataPrimeiroDeposito
                     );
@@ -59,30 +55,18 @@ namespace Projeto.Integrador.Controller
         {
             using (SqlConnection conexao = ConexaoDAO.ObterConexao())
             {
-                string sql = "UPDATE Conta SET Saldo = @Saldo, " +
-                             "DataPrimeiroDeposito = @DataPrimeiroDeposito " +
-                             "WHERE NumeroConta = @NumeroConta";
-
-                SqlCommand comando = new SqlCommand(sql, conexao);
-                comando.Parameters.AddWithValue("@Saldo", conta.Saldo);
-                comando.Parameters.AddWithValue("@NumeroConta", conta.NumeroConta);
-
-                if (conta.DataPrimeiroDeposito == null)
-                    comando.Parameters.AddWithValue("@DataPrimeiroDeposito", DBNull.Value);
-                else
-                    comando.Parameters.AddWithValue("@DataPrimeiroDeposito", conta.DataPrimeiroDeposito);
-
-                comando.ExecuteNonQuery();
+                AtualizarSaldo(conexao, null, conta.NumeroConta, conta.Saldo, conta.DataPrimeiroDeposito);
             }
         }
 
-        public Conta BuscarContaPorCPF(string cpf)
+        public Conta? BuscarContaPorCPF(string cpf)
         {
             using (SqlConnection conexao = ConexaoDAO.ObterConexao())
             {
                 string cpfLimpo = cpf.Replace(".", "").Replace("-", "");
 
-                string sql = "SELECT c.NumeroConta, c.Saldo, c.UsuarioId " +
+                string sql = "SELECT c.NumeroConta, c.Saldo, c.UsuarioId, c.DataPrimeiroDeposito, " +
+                             "u.Nome, u.Sobrenome, u.CPF " +
                              "FROM Conta c " +
                              "INNER JOIN Usuario u ON c.UsuarioId = u.Id " +
                              "WHERE u.CPF = @CPF";
@@ -94,23 +78,32 @@ namespace Projeto.Integrador.Controller
 
                 if (leitor.Read())
                 {
+                    DateTime? dataPrimeiroDeposito = null;
+                    if (leitor["DataPrimeiroDeposito"] != DBNull.Value)
+                        dataPrimeiroDeposito = Convert.ToDateTime(leitor["DataPrimeiroDeposito"]);
+
                     Usuario titular = new Usuario(
                         Convert.ToInt32(leitor["UsuarioId"]),
-                        "", "", "", "", DateTime.MinValue
+                        leitor["Nome"].ToString() ?? string.Empty,
+                        leitor["Sobrenome"].ToString() ?? string.Empty,
+                        string.Empty,
+                        leitor["CPF"].ToString() ?? string.Empty,
+                        DateTime.MinValue
                     );
 
                     return new Conta(
                         Convert.ToInt32(leitor["NumeroConta"]),
-                        Convert.ToDouble(leitor["Saldo"]),
-                        titular
+                        Convert.ToDecimal(leitor["Saldo"]),
+                        titular,
+                        dataPrimeiroDeposito
                     );
                 }
 
-                return null; 
+                return null;
             }
         }
 
-        public string BuscarNomePorConta(int numeroConta)
+        public string? BuscarNomePorConta(int numeroConta)
         {
             using (SqlConnection conexao = ConexaoDAO.ObterConexao())
             {
@@ -128,6 +121,152 @@ namespace Projeto.Integrador.Controller
 
                 return null;
             }
+        }
+
+        public void RegistrarDeposito(Conta conta, decimal valor)
+        {
+            using (SqlConnection conexao = ConexaoDAO.ObterConexao())
+            using (SqlTransaction transacao = conexao.BeginTransaction())
+            {
+                try
+                {
+                    DateTime dataOperacao = DateTime.Now;
+                    DateTime? dataPrimeiroDeposito = conta.DataPrimeiroDeposito ?? dataOperacao;
+                    decimal novoSaldo = conta.Saldo + valor;
+
+                    AtualizarSaldo(conexao, transacao, conta.NumeroConta, novoSaldo, dataPrimeiroDeposito);
+                    RegistrarExtrato(conexao, transacao, conta.NumeroConta, "Deposito", valor, novoSaldo, dataOperacao);
+
+                    transacao.Commit();
+                    conta.AtualizarDados(novoSaldo, dataPrimeiroDeposito);
+                }
+                catch
+                {
+                    transacao.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        public void RegistrarSaque(Conta conta, decimal valor)
+        {
+            if (valor > conta.Saldo)
+                throw new InvalidOperationException("Saldo insuficiente.");
+
+            using (SqlConnection conexao = ConexaoDAO.ObterConexao())
+            using (SqlTransaction transacao = conexao.BeginTransaction())
+            {
+                try
+                {
+                    DateTime dataOperacao = DateTime.Now;
+                    decimal novoSaldo = conta.Saldo - valor;
+
+                    AtualizarSaldo(conexao, transacao, conta.NumeroConta, novoSaldo, conta.DataPrimeiroDeposito);
+                    RegistrarExtrato(conexao, transacao, conta.NumeroConta, "Saque", valor, novoSaldo, dataOperacao);
+
+                    transacao.Commit();
+                    conta.AtualizarDados(novoSaldo, conta.DataPrimeiroDeposito);
+                }
+                catch
+                {
+                    transacao.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        public void RealizarTransferencia(Conta contaOrigem, Conta contaDestino, decimal valor, string nomeOrigem, string nomeDestino)
+        {
+            using (SqlConnection conexao = ConexaoDAO.ObterConexao())
+            using (SqlTransaction transacao = conexao.BeginTransaction())
+            {
+                try
+                {
+                    DateTime dataOperacao = DateTime.Now;
+                    DadosConta dadosOrigem = BuscarDadosConta(conexao, transacao, contaOrigem.NumeroConta);
+                    DadosConta dadosDestino = BuscarDadosConta(conexao, transacao, contaDestino.NumeroConta);
+
+                    if (valor > dadosOrigem.Saldo)
+                        throw new InvalidOperationException("Saldo insuficiente.");
+
+                    decimal novoSaldoOrigem = dadosOrigem.Saldo - valor;
+                    decimal novoSaldoDestino = dadosDestino.Saldo + valor;
+                    DateTime? dataPrimeiroDepositoDestino = dadosDestino.DataPrimeiroDeposito ?? dataOperacao;
+
+                    AtualizarSaldo(conexao, transacao, contaOrigem.NumeroConta, novoSaldoOrigem, dadosOrigem.DataPrimeiroDeposito);
+                    AtualizarSaldo(conexao, transacao, contaDestino.NumeroConta, novoSaldoDestino, dataPrimeiroDepositoDestino);
+
+                    RegistrarExtrato(conexao, transacao, contaOrigem.NumeroConta, "Transf. para " + nomeDestino, valor, novoSaldoOrigem, dataOperacao);
+                    RegistrarExtrato(conexao, transacao, contaDestino.NumeroConta, "Transf. de " + nomeOrigem, valor, novoSaldoDestino, dataOperacao);
+
+                    transacao.Commit();
+
+                    contaOrigem.AtualizarDados(novoSaldoOrigem, dadosOrigem.DataPrimeiroDeposito);
+                    contaDestino.AtualizarDados(novoSaldoDestino, dataPrimeiroDepositoDestino);
+                }
+                catch
+                {
+                    transacao.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        private static void AtualizarSaldo(SqlConnection conexao, SqlTransaction? transacao, int numeroConta, decimal saldo, DateTime? dataPrimeiroDeposito)
+        {
+            string sql = "UPDATE Conta SET Saldo = @Saldo, DataPrimeiroDeposito = @DataPrimeiroDeposito WHERE NumeroConta = @NumeroConta";
+
+            using SqlCommand comando = new SqlCommand(sql, conexao, transacao);
+            comando.Parameters.AddWithValue("@Saldo", saldo);
+            comando.Parameters.AddWithValue("@NumeroConta", numeroConta);
+            comando.Parameters.AddWithValue("@DataPrimeiroDeposito", dataPrimeiroDeposito ?? (object)DBNull.Value);
+            comando.ExecuteNonQuery();
+        }
+
+        private static void RegistrarExtrato(SqlConnection conexao, SqlTransaction transacao, int numeroConta, string tipo, decimal valor, decimal saldo, DateTime dataOperacao)
+        {
+            string sql = @"INSERT INTO Extrato
+                           (NumeroConta, Tipo, Valor, Saldo, DataOperacao)
+                           VALUES
+                           (@NumeroConta, @Tipo, @Valor, @Saldo, @DataOperacao)";
+
+            using SqlCommand comando = new SqlCommand(sql, conexao, transacao);
+            comando.Parameters.AddWithValue("@NumeroConta", numeroConta);
+            comando.Parameters.AddWithValue("@Tipo", tipo);
+            comando.Parameters.AddWithValue("@Valor", valor);
+            comando.Parameters.AddWithValue("@Saldo", saldo);
+            comando.Parameters.AddWithValue("@DataOperacao", dataOperacao);
+            comando.ExecuteNonQuery();
+        }
+
+        private static DadosConta BuscarDadosConta(SqlConnection conexao, SqlTransaction transacao, int numeroConta)
+        {
+            string sql = "SELECT Saldo, DataPrimeiroDeposito FROM Conta WITH (UPDLOCK) WHERE NumeroConta = @NumeroConta";
+
+            using SqlCommand comando = new SqlCommand(sql, conexao, transacao);
+            comando.Parameters.AddWithValue("@NumeroConta", numeroConta);
+
+            using SqlDataReader leitor = comando.ExecuteReader();
+            if (!leitor.Read())
+                throw new InvalidOperationException("Conta não encontrada.");
+
+            DateTime? dataPrimeiroDeposito = null;
+            if (leitor["DataPrimeiroDeposito"] != DBNull.Value)
+                dataPrimeiroDeposito = Convert.ToDateTime(leitor["DataPrimeiroDeposito"]);
+
+            return new DadosConta(Convert.ToDecimal(leitor["Saldo"]), dataPrimeiroDeposito);
+        }
+
+        private readonly struct DadosConta
+        {
+            public DadosConta(decimal saldo, DateTime? dataPrimeiroDeposito)
+            {
+                Saldo = saldo;
+                DataPrimeiroDeposito = dataPrimeiroDeposito;
+            }
+
+            public decimal Saldo { get; }
+            public DateTime? DataPrimeiroDeposito { get; }
         }
     }
 }

@@ -16,22 +16,22 @@ namespace Projeto.Integrador.Model
 
         public string Tipo { get; private set; }
 
-        public double Valor { get; private set; }
+        public decimal Valor { get; private set; }
 
-        public double Saldo { get; private set; }
+        public decimal Saldo { get; private set; }
 
         public DateTime DataOperacao { get; private set; }
 
         public Extrato()
         {
-
+            Tipo = string.Empty;
         }
 
         public Extrato(int id,
                        int numeroConta,
                        string tipo,
-                       double valor,
-                       double saldo,
+                       decimal valor,
+                       decimal saldo,
                        DateTime dataOperacao)
         {
             Id = id;

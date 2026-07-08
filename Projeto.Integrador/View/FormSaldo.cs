@@ -3,13 +3,6 @@ using Projeto.Integrador.Controller;
 using Projeto.Integrador.DAO;
 using Projeto.Integrador.Model;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Projeto.Integrador.View
@@ -18,8 +11,6 @@ namespace Projeto.Integrador.View
     {
         private Conta _conta;
         private ContaController contaDAO = new ContaController();
-        private ExtratoController extratoDAO = new ExtratoController();
-
         public FormSaldo(Conta conta)
         {
             InitializeComponent();
@@ -28,7 +19,7 @@ namespace Projeto.Integrador.View
 
         private void FormSaldo_Load(object sender, EventArgs e)
         {
-            lblSaldo.Text = "Saldo: R$ " + _conta.Saldo.ToString("F2");
+            lblSaldo.Text = "Saldo em conta: R$ " + _conta.Saldo.ToString("F2");
             lblBemVindo.Text = "Bem-vindo, " + _conta.Titular.Nome + " " + _conta.Titular.Sobrenome + "!";
         }
 
@@ -43,8 +34,8 @@ namespace Projeto.Integrador.View
             if (string.IsNullOrWhiteSpace(valorDigitado))
                 return;
 
-            double valor;
-            if (!double.TryParse(valorDigitado, out valor))
+            decimal valor;
+            if (!decimal.TryParse(valorDigitado, out valor))
             {
                 MessageBox.Show("Valor inválido. Digite um número.");
                 return;
@@ -56,13 +47,9 @@ namespace Projeto.Integrador.View
                 return;
             }
 
-            _conta.Depositar(valor);
-            contaDAO.AtualizarSaldo(_conta);
+            contaDAO.RegistrarDeposito(_conta, valor);
 
-            Extrato extrato = new Extrato(0, _conta.NumeroConta, "Deposito", valor, _conta.Saldo, DateTime.Now);
-            extratoDAO.RegistrarOperacao(extrato);
-
-            lblSaldo.Text = "Saldo: R$ " + _conta.Saldo.ToString("F2");
+            lblSaldo.Text = "Saldo em conta: R$ " + _conta.Saldo.ToString("F2");
             MessageBox.Show("Depósito de R$ " + valor.ToString("F2") + " realizado com sucesso!");
         }
 
@@ -77,8 +64,8 @@ namespace Projeto.Integrador.View
             if (string.IsNullOrWhiteSpace(valorDigitado))
                 return;
 
-            double valor;
-            if (!double.TryParse(valorDigitado, out valor))
+            decimal valor;
+            if (!decimal.TryParse(valorDigitado, out valor))
             {
                 MessageBox.Show("Valor inválido. Digite um número.");
                 return;
@@ -96,13 +83,9 @@ namespace Projeto.Integrador.View
                 return;
             }
 
-            _conta.Sacar(valor);
-            contaDAO.AtualizarSaldo(_conta);
+            contaDAO.RegistrarSaque(_conta, valor);
 
-            Extrato extrato = new Extrato(0, _conta.NumeroConta, "Saque", valor, _conta.Saldo, DateTime.Now);
-            extratoDAO.RegistrarOperacao(extrato);
-
-            lblSaldo.Text = "Saldo: R$ " + _conta.Saldo.ToString("F2");
+            lblSaldo.Text = "Saldo em conta: R$ " + _conta.Saldo.ToString("F2");
             MessageBox.Show("Saque de R$ " + valor.ToString("F2") + " realizado com sucesso!");
         }
 
@@ -132,7 +115,7 @@ namespace Projeto.Integrador.View
                 return;
             }
 
-            Conta contaDestino = contaDAO.BuscarContaPorCPF(cpfDestino);
+            Conta? contaDestino = contaDAO.BuscarContaPorCPF(cpfDestino);
 
             if (contaDestino == null)
             {
@@ -141,7 +124,7 @@ namespace Projeto.Integrador.View
             }
 
             // Busca o nome do destinatário
-            string nomeDestino = contaDAO.BuscarNomePorConta(contaDestino.NumeroConta);
+            string nomeDestino = contaDAO.BuscarNomePorConta(contaDestino.NumeroConta) ?? "destinatário";
 
             // Confirma com o usuário antes de transferir
             DialogResult confirmacao = MessageBox.Show(
@@ -162,8 +145,8 @@ namespace Projeto.Integrador.View
             if (string.IsNullOrWhiteSpace(valorDigitado))
                 return;
 
-            double valor;
-            if (!double.TryParse(valorDigitado, out valor))
+            decimal valor;
+            if (!decimal.TryParse(valorDigitado, out valor))
             {
                 MessageBox.Show("Valor inválido. Digite um número.");
                 return;
@@ -181,29 +164,11 @@ namespace Projeto.Integrador.View
                 return;
             }
 
-            _conta.Sacar(valor);
-            contaDAO.AtualizarSaldo(_conta);
-
-            contaDestino.Depositar(valor);
-            contaDAO.AtualizarSaldo(contaDestino);
-
             string nomeOrigem = _conta.Titular.Nome + " " + _conta.Titular.Sobrenome;
 
-            Extrato extratoOrigem = new Extrato(
-                0, _conta.NumeroConta,
-                "Transf. para " + nomeDestino,
-                valor, _conta.Saldo, DateTime.Now
-            );
-            extratoDAO.RegistrarOperacao(extratoOrigem);
+            contaDAO.RealizarTransferencia(_conta, contaDestino, valor, nomeOrigem, nomeDestino);
 
-            Extrato extratoDestino = new Extrato(
-                0, contaDestino.NumeroConta,
-                "Transf. de " + nomeOrigem,
-                valor, contaDestino.Saldo, DateTime.Now
-            );
-            extratoDAO.RegistrarOperacao(extratoDestino);
-
-            lblSaldo.Text = "Saldo: R$ " + _conta.Saldo.ToString("F2");
+            lblSaldo.Text = "Saldo em conta: R$ " + _conta.Saldo.ToString("F2");
             MessageBox.Show("Transferência de R$ " + valor.ToString("F2") +
                           " realizada com sucesso para " + nomeDestino + "!");
 
@@ -221,8 +186,24 @@ namespace Projeto.Integrador.View
             formLogin.Show();
             this.Close();
         }
-       
-     
 
+        private void pictureBox2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void lblSaldo_Click(object sender, EventArgs e)
+        {
+
+        }
+        private void FormLogin_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Application.Exit();
+        }
     }
 }

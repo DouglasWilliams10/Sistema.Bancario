@@ -5,15 +5,16 @@ namespace Projeto.Integrador.Model
     public class Conta
     {
         public int NumeroConta { get; private set; }
-        public double Saldo { get; private set; }
+        public decimal Saldo { get; private set; }
         public Usuario Titular { get; private set; }
         public DateTime? DataPrimeiroDeposito { get; private set; }
 
         public Conta()
         {
+            Titular = new Usuario();
         }
 
-        public Conta(int numeroConta, double saldo, Usuario titular, DateTime? dataPrimeiroDeposito = null)
+        public Conta(int numeroConta, decimal saldo, Usuario titular, DateTime? dataPrimeiroDeposito = null)
         {
             NumeroConta = numeroConta;
             Saldo = saldo;
@@ -21,16 +22,22 @@ namespace Projeto.Integrador.Model
             DataPrimeiroDeposito = dataPrimeiroDeposito;
         }
 
-        public void Depositar(double valor)
+        public void Depositar(decimal valor)
         {
             if (DataPrimeiroDeposito == null)
                 DataPrimeiroDeposito = DateTime.Now;
             Saldo += valor;
         }
 
-        public void Sacar(double valor)
+        public void Sacar(decimal valor)
         {
             Saldo -= valor;
+        }
+
+        public void AtualizarDados(decimal saldo, DateTime? dataPrimeiroDeposito)
+        {
+            Saldo = saldo;
+            DataPrimeiroDeposito = dataPrimeiroDeposito;
         }
     }
 }

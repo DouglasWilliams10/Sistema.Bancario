@@ -59,5 +59,15 @@ namespace Projeto.Integrador.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Consulta um recurso localizado do tipo System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap caixa_de_deposito {
+            get {
+                object obj = ResourceManager.GetObject("caixa-de-deposito", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }

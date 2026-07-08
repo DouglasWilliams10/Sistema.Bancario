@@ -21,7 +21,10 @@ namespace Projeto.Integrador.Model
         //Construtor vazio
         public Usuario()
         {
-
+            Nome = string.Empty;
+            Sobrenome = string.Empty;
+            Senha = string.Empty;
+            CPF = string.Empty;
         }
         //construtor completo
         public Usuario(int id, string nome, string sobrenome, string senha, string cpf, DateTime dataNascimento)

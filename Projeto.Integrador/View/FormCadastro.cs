@@ -36,9 +36,19 @@ namespace Projeto.Integrador.View
                 MessageBox.Show("Por favor Insira um Nome");
                 return;
             }
+            if (!NomeIsValid(txtNome.Text.Trim()))
+            {
+                MessageBox.Show("O nome não pode conter números ou caracteres especiais.");
+                return;
+            }
             if (string.IsNullOrWhiteSpace(txtSobrenome.Text.Trim()))
             {
                 MessageBox.Show("Por favor, Insira um Sobrenome");
+                return;
+            }
+            if (!NomeIsValid(txtSobrenome.Text.Trim()))
+            {
+                MessageBox.Show("O sobrenome não pode conter números ou caracteres especiais.");
                 return;
             }
             if (string.IsNullOrWhiteSpace(txtSenha.Text.Trim()))
@@ -46,9 +56,15 @@ namespace Projeto.Integrador.View
                 MessageBox.Show("A senha é obrigatoria");
                 return;
             }
-            if (txtSenha.Text.Trim().Length < 6)
+            if (!SenhaIsValid(txtSenha.Text.Trim()))
             {
-                MessageBox.Show("A senha deve ter pelo menos 6 caracteres.");
+                MessageBox.Show(
+                    "A senha deve ter, no mínimo, 6 caracteres, incluindo:\n\n" +
+                    "- 1 letra maiúscula\n" +
+                    "- 1 letra minúscula\n" +
+                    "- 1 número\n" +
+                    "- 1 caractere especial (@, $, !, %, *, ?)"
+                );
                 return;
             }
             if (dtpDataNascimento.Value > DateTime.Now)
@@ -109,6 +125,16 @@ namespace Projeto.Integrador.View
 
         }
 
+        private bool NomeIsValid(string nome)
+        {
+            if (string.IsNullOrWhiteSpace(nome))
+                return false;
+
+            // Aceita apenas letras (incluindo acentuadas) e espaços entre palavras.
+            // Rejeita números e qualquer outro caractere especial.
+            return nome.All(c => char.IsLetter(c) || char.IsWhiteSpace(c));
+        }
+
         private bool CpfIsValid(string cpf)
         {
             if (string.IsNullOrWhiteSpace(cpf))
@@ -161,6 +187,23 @@ namespace Projeto.Integrador.View
             digito = digito + resto.ToString();
             return cpf.EndsWith(digito);
         }
+
+        private bool SenhaIsValid(string senha)
+        {
+            const string caracteresEspeciais = "@$!%*?";
+
+            bool temMaiuscula = senha.Any(char.IsUpper);
+            bool temMinuscula = senha.Any(char.IsLower);
+            bool temNumero = senha.Any(char.IsDigit);
+            bool temEspecial = senha.Any(caracteresEspeciais.Contains);
+
+            return senha.Length >= 6
+                   && temMaiuscula
+                   && temMinuscula
+                   && temNumero
+                   && temEspecial;
+        }
+
         private int CalcularIdade(DateTime nascimento)
         {
             int idade = DateTime.Now.Year - nascimento.Year;
@@ -174,6 +217,21 @@ namespace Projeto.Integrador.View
             FormLogin menu = new FormLogin();
             menu.Show();
             this.Hide();
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void lbl_tela_cadastro_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label9_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

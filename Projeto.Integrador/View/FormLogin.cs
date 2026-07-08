@@ -2,13 +2,6 @@
 using Projeto.Integrador.DAO;
 using Projeto.Integrador.Model;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Projeto.Integrador.View
@@ -30,16 +23,17 @@ namespace Projeto.Integrador.View
                 MessageBox.Show("Por favor, preencha o CPF completo.");
                 return;
             }
+
             if (string.IsNullOrWhiteSpace(txtSenhaLogin.Text.Trim()))
             {
-                MessageBox.Show("Por favor, insira uma senha");
+                MessageBox.Show("Por favor, insira uma senha.");
                 return;
             }
 
-
-            string cpfDigitado = txtUsuarioLogin.Text.Trim().ToUpper();
+            string cpfDigitado = txtUsuarioLogin.Text.Trim();
             string senhaDigitada = txtSenhaLogin.Text.Trim();
-            Usuario usuarioEncontrado = usuarioDAO.BuscarUsuario(cpfDigitado, senhaDigitada);
+
+            Usuario? usuarioEncontrado = usuarioDAO.BuscarUsuario(cpfDigitado, senhaDigitada);
 
             if (usuarioEncontrado == null)
             {
@@ -47,7 +41,7 @@ namespace Projeto.Integrador.View
                 return;
             }
 
-            Conta contaEncontrada = contaDAO.BuscarContaPorUsuario(usuarioEncontrado);
+            Conta? contaEncontrada = contaDAO.BuscarContaPorUsuario(usuarioEncontrado);
 
             if (contaEncontrada == null)
             {
@@ -62,29 +56,38 @@ namespace Projeto.Integrador.View
 
         private void btnVoltar_login_Click(object sender, EventArgs e)
         {
-            FormLogin menu = new FormLogin();
-            menu.Show();
-            this.Hide();
+            Application.Exit();
         }
 
         private void txtUsuarioLogin_MaskInputRejected(object sender, MaskInputRejectedEventArgs e)
         {
-
         }
 
         private void btnVoltar_login_Click_1(object sender, EventArgs e)
         {
-
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            //instancia da tela de Cadastro
             FormCadastro cadastro = new FormCadastro();
             cadastro.Show();
-
-            //Esconde a tela
             this.Hide();
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void txtSenhaLogin_TextChanged(object sender, EventArgs e)
+        {
+        }
+        private void FormLogin_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Application.Exit();
         }
     }
 }
